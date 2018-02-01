@@ -7,75 +7,39 @@
 #define VIS_IMU 0
 #define VIS_ORIENTATION 0
 
-#define PULSE_LENGTH 1500
-#define LOOP_TIME 4000
-
 
 IMU* imu;
 OrientationHandler* orHand;
-uint32_t beginLoopTime = 0;
 
 void setup() {
   
   while (SAFEMODE)
     delay(1000);
 
+  DDRD |= 0b11110000;
+  PORTD |= 0b11110000;
+  
   imu = new MPU6050();
   orHand = new OrientationHandler(imu);
     
-  Serial.begin(9600);  
-  //orHand->initialize();
-  //orHand->calibrate();
+  Serial.begin(9600);
+
+  Serial.println("Begin ESC Calibrate");
+  calibrate();
+  Serial.println("End ESC Calibrate");
+    
+  orHand->initialize();
+  orHand->calibrate();
   
   #if VISUALIZE
     visualize();
   #endif
 
-  //PORTD |= 0b01000000;
-  //DDRD &= 0b00001111;
+  
 }
 
 void loop() {
-
-  calESC();  
-
-}
-
-void calESC() {
-
-  int iterations = 0;
-  
-  int loopTime = 4000;
-  int pulseLength = 2000;
-
-  DDRD |= 0b11110000;
-  PORTD |= 0b11110000;
-  Serial.println("Begin");
-  //delay(5000);
-  beginLoopTime = micros();
-  
-  while (1) {
-
-    if (iterations % 400 == 0)
-      Serial.println(pulseLength);
-    
-    if (iterations < 1000)
-      pulseLength = 2000;
-    else if (iterations < 1500)
-      pulseLength = 1000;
-    else
-      pulseLength = 1000 * abs(sin(iterations * .001)) + 1000;
-    
-    while(micros() <  beginLoopTime + loopTime);
-    PORTD |= 0b11110000;
-    beginLoopTime = micros();
-  
-
-    while(micros() < beginLoopTime + pulseLength);
-    PORTD &= 0b00001111;
-
-    iterations++;
-  }
+  delay(3);
 }
 
 /**
