@@ -10,6 +10,7 @@
 
 IMU* imu;
 OrientationHandler* orHand;
+float throttle1=0, throttle2=0, throttle3=0, throttle4=0;
 
 void setup() {
   
@@ -39,7 +40,20 @@ void setup() {
 }
 
 void loop() {
-  delay(3);
+  static uint32_t lastCycleTime = micros();
+  static int testIter = 0;
+  float t = abs(sin(testIter * .001));
+  throttle1 = abs(sin(testIter * .001));
+  throttle2 = abs(sin((testIter * .001) + PI/4));
+  throttle3 = abs(sin((testIter * .001) + PI/2));
+  throttle4 = abs(sin((testIter * .001) + 3*PI/4));
+
+  if (testIter % 400 == 0)
+    Serial.println(t);
+  
+  pulseESCs(throttle1, throttle2, throttle3, throttle4, lastCycleTime);
+
+  testIter++;
 }
 
 /**
