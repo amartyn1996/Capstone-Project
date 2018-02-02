@@ -100,6 +100,7 @@ void ESC::calibrate() {
  *  Consistent timed pulses are very important for the proper function of the ESCs.
  */
 void ESC::pulseESCs(float throttle1, float throttle2, float throttle3, float throttle4, uint32_t &lastCycleTime) {
+  
   //Make sure throttles are between 0.0 and 1.0.
   throttle1 = max(0, min(1, throttle1));
   throttle2 = max(0, min(1, throttle2));
@@ -128,6 +129,28 @@ void ESC::pulseESCs(float throttle1, float throttle2, float throttle3, float thr
     PORTD &= (curTime < lastCycleTime + pulseLen3) ? 0xFF : 0b10111111;
     PORTD &= (curTime < lastCycleTime + pulseLen4) ? 0xFF : 0b01111111;
   }
+
 }
+
+/**
+ *  Sends power to the ESCs depending the throttle and how much pitch and roll are desired.
+ *  Pitch and Roll have a range between -1.0 and 1.0.
+ *  Throttle has a range between 0.0 and 1.0.
+ */
+void ESC::demandControl(float pitch, float roll, float throttle, uint32_t &lastCycleTime) {
+  
+  float t1 = throttle, t2 = throttle, t3 = throttle, t4 = throttle;
+  throttle = max(0, min(1, throttle));
+  pitch = max(-1, min(1, pitch)) * throttle;
+  roll = max(-1, min(1, roll)) * throttle;  
+  
+  t1 += pitch - roll;  //Front left motor.
+  t2 += pitch + roll;  //Front right motor.
+  t3 += -pitch + roll; //Back right motor.
+  t4 += -pitch - roll; //Back left motor.
+
+  pulseESCs(t1,t2,t3,t4,lastCycleTime);
+}
+
 
 

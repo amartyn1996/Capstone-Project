@@ -38,7 +38,7 @@ bool OrientationHandler::calibrate() {
 void OrientationHandler::calcOrientation(float &pitch, float &roll) {
   
   float aX, aY, aZ, gX, gY, gZ;
-  
+
   _imu->getSensorData(aX, aY, aZ, gX, gY, gZ);
 
   //Get the average acceleration vector.
@@ -47,7 +47,7 @@ void OrientationHandler::calcOrientation(float &pitch, float &roll) {
   aY = _avgAY;
   aZ = _avgAZ;
   normalize(aX, aY, aZ);
-
+  
   //Calculate the change in gyro angle between last update and now.
   uint32_t curTime = millis();
   float deltaTime = .001 * (float) (curTime - _prevTime);
@@ -75,6 +75,7 @@ void OrientationHandler::calcOrientation(float &pitch, float &roll) {
   _prevGY = gY;
   _prevGZ = gZ;
   _prevTime = curTime;
+ 
 }
 
 /**

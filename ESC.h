@@ -12,11 +12,12 @@ class ESC {
 	
 	private:
 		int _cycleLength = 4000;
+    void pulseESCs(float throttle1, float throttle2, float throttle3, float throttle4, uint32_t &lastCycleTime);
 	
 	public:
 		ESC(int cycleLength);
-		void calibrate();
-		void pulseESCs(float throttle1, float throttle2, float throttle3, float throttle4, uint32_t &lastCycleTime);
+		void calibrate();		
+    void demandControl(float pitch, float roll, float throttle, uint32_t &lastCycleTime);
 };
 
 #endif

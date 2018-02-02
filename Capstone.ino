@@ -44,19 +44,13 @@ void setup() {
 
 void loop() {
   static uint32_t lastCycleTime = micros();
-  static int testIter = 0;
-  float t = abs(sin(testIter * .001));
-  throttle1 = abs(sin(testIter * .001));
-  throttle2 = abs(sin((testIter * .001) + PI/4));
-  throttle3 = abs(sin((testIter * .001) + PI/2));
-  throttle4 = abs(sin((testIter * .001) + 3*PI/4));
-
-  if (testIter % 400 == 0)
-    Serial.println(t);
+  static float pitch = 0;
+  static float roll = 0;
   
-  esc->pulseESCs(throttle1, throttle2, throttle3, throttle4, lastCycleTime);
-
-  testIter++;
+  orHand->calcOrientation(pitch, roll);
+  
+  esc->demandControl(-pitch/90, -roll/90, .25, lastCycleTime);
+  
 }
 
 /**
