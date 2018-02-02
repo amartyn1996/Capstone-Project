@@ -31,7 +31,7 @@ class OrientationHandler {
 	float vecLength(float aX, float aY, float aZ);
 
   public:
-  OrientationHandler(IMU* imu);
+	OrientationHandler(IMU* imu);
 	bool initialize();
 	bool calibrate();
 	void calcOrientation(float &pitch, float &roll);

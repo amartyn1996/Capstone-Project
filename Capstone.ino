@@ -1,6 +1,7 @@
 #include <Wire.h>
 #include "MPU6050.h"
 #include "OrientationHandler.h"
+#include "ESC.h"
 
 #define SAFEMODE 0
 #define VISUALIZE 0
@@ -9,6 +10,7 @@
 
 
 IMU* imu;
+ESC* esc;
 OrientationHandler* orHand;
 float throttle1=0, throttle2=0, throttle3=0, throttle4=0;
 
@@ -19,14 +21,15 @@ void setup() {
 
   DDRD |= 0b11110000;
   PORTD |= 0b11110000;
-  
+
+  esc = new ESC(4000);
   imu = new MPU6050();
   orHand = new OrientationHandler(imu);
     
   Serial.begin(9600);
 
   Serial.println("Begin ESC Calibrate");
-  calibrate();
+  esc->calibrate();
   Serial.println("End ESC Calibrate");
     
   orHand->initialize();
@@ -51,7 +54,7 @@ void loop() {
   if (testIter % 400 == 0)
     Serial.println(t);
   
-  pulseESCs(throttle1, throttle2, throttle3, throttle4, lastCycleTime);
+  esc->pulseESCs(throttle1, throttle2, throttle3, throttle4, lastCycleTime);
 
   testIter++;
 }
