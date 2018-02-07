@@ -29,7 +29,7 @@ class MPU6050 : virtual public IMU {
 	bool getSensorData(float &accelX, float &accelY, float &accelZ, float &gyroX, float &gyroY, float &gyroZ);
   
   private:
-    float _gravAccelX = 0, _gravAccelY = 0, _gravAccelZ = 0, _offsetGyroX = 0, _offsetGyroY = 0, _offsetGyroZ = 0;
+    float _gravAccelX, _gravAccelY, _gravAccelZ, _offsetGyroX, _offsetGyroY, _offsetGyroZ;
 	
 };
 

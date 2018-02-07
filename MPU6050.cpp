@@ -11,6 +11,9 @@ MPU6050::MPU6050() {}
  */
 bool MPU6050::initialize() {
   
+  _gravAccelX = 0; _gravAccelY = 0; _gravAccelZ = 0;
+  _offsetGyroX = 0; _offsetGyroY = 0; _offsetGyroZ = 0;
+  
   Wire.beginTransmission(IMU_ADDRESS);
   Wire.write(REG_PWR_MGMT_1);
   Wire.write(0);

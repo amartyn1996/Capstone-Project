@@ -3,6 +3,13 @@
 
 OrientationHandler::OrientationHandler(IMU* imu) {
   _imu = imu;
+  _prevTime = 0;
+  _prevGX = 0; _prevGY = 0; _prevGZ = 0;
+  _avgAX=0; _avgAY=0; _avgAZ=0;
+  _avgAXArray = (int16_t*) malloc(AVG_ARRAY_SIZE * sizeof(int16_t));
+  _avgAYArray = (int16_t*) malloc(AVG_ARRAY_SIZE * sizeof(int16_t));
+  _avgAZArray = (int16_t*) malloc(AVG_ARRAY_SIZE * sizeof(int16_t));
+  _numTimesAveraged = 0;
 }
 
 /**
@@ -21,10 +28,6 @@ bool OrientationHandler::calibrate() {
   //Get the initial pitch and roll
   float aX, aY, aZ, gX, gY, gZ;
   _imu->getSensorData(aX, aY, aZ, gX, gY, gZ);
-  updateAverageAccel(aX, aY, aZ);
-  aX = _avgAX;
-  aY = _avgAY;
-  aZ = _avgAZ;
   normalize(aX, aY, aZ);
   _pitch = 90 * aY;
   _roll = 90 * aX;
@@ -38,14 +41,21 @@ bool OrientationHandler::calibrate() {
 void OrientationHandler::calcOrientation(float &pitch, float &roll) {
   
   float aX, aY, aZ, gX, gY, gZ;
-
+  
   _imu->getSensorData(aX, aY, aZ, gX, gY, gZ);
+  
+  int16_t tmpAX, tmpAY, tmpAZ;
+  tmpAX = (int16_t) (aX * ACCEL_AVG_SCALING);
+  tmpAY = (int16_t) (aY * ACCEL_AVG_SCALING);
+  tmpAZ = (int16_t) (aZ * ACCEL_AVG_SCALING);
 
   //Get the average acceleration vector.
-  updateAverageAccel(aX, aY, aZ);
-  aX = _avgAX;
-  aY = _avgAY;
-  aZ = _avgAZ;
+  updateAverageAccel(tmpAX, tmpAY, tmpAZ);
+
+  aX = ((float) _avgAX) / ACCEL_AVG_SCALING;
+  aY = ((float) _avgAY) / ACCEL_AVG_SCALING;
+  aZ = ((float) _avgAZ) / ACCEL_AVG_SCALING;
+
   normalize(aX, aY, aZ);
   
   //Calculate the change in gyro angle between last update and now.
@@ -75,65 +85,37 @@ void OrientationHandler::calcOrientation(float &pitch, float &roll) {
   _prevGY = gY;
   _prevGZ = gZ;
   _prevTime = curTime;
- 
+
 }
 
-/**
- *  Updates the weighted sum of an existing exponential moving average.
- *  
- *  Helper function for updateEMA().
- *  Take a look at updateAverageAccel() for an explaination on EMAs.
- */
-void OrientationHandler::updateWeightedSum(float newValue, float &weightedSum, uint32_t numElementsAveraged) {
-  weightedSum = newValue + (1 - EXP_MOV_AVG_ALPHA) * weightedSum;
-}
-
-/**
- *  Updates the weighted count of an existing exponential moving average.
- *  
- *  Helper function for updateEMA().
- *  Take a look at updateAverageAccel() for an explaination on EMAs.
- */
-void OrientationHandler::updateWeightedCount(float &weightedCount, uint32_t numElementsAveraged) {
-  weightedCount = ( 1 - pow(1 - EXP_MOV_AVG_ALPHA, numElementsAveraged) ) / ( 1 - (1 - EXP_MOV_AVG_ALPHA) );
-}
-
-/**
- *  Updates an existing exponential moving average with a new value.
- *  
- *  Helper function for updateAverageAccel().
- *  Take a look there for an explaination on EMAs.
- */
-void OrientationHandler::updateEMA(float newValue, float &weightedSum, float &weightedCount, float &expMovAvg, uint32_t numElementsAveraged) {
-  updateWeightedSum(newValue, weightedSum, numElementsAveraged);
-  updateWeightedCount(weightedCount, numElementsAveraged);
-  expMovAvg = weightedSum / weightedCount;
-}
 
 /**
  *  Incorporates a new value into the running average acceleration vector.
- * 
- *  The 'average' value is really an exponential moving average.
- *  Simply, it is a way of getting the average of many values but the most recent 
- *  values change the average more than old values.
- *  The formula for it is as follows:
- *  
- *  ExponentialMovingAverage = WeightedSum / WeightedCount
- *  
- *  WeightedSum = NewValue + (1 - Alpha) * WeightedSum
- *  
- *  WeightedCount = (1 + (1 - Alpha)^numElementsAveraged) / (1 - (1 - Alpha))
- *  
- *  Where NewValue is the latest value we want to incorporate into the average.
- *  And where Alpha is how much new values influence the average. Its range is for 0.0 to 1.0.
- *  And where numElementsAveraged can be thought of as the total number of times the average was calculated + 1.
- *  
  */
-void OrientationHandler::updateAverageAccel(float newAX, float newAY, float newAZ) { 
-  updateEMA(newAX, _wSumAX, _wCntAX, _avgAX, _numElementsAveraged);
-  updateEMA(newAY, _wSumAY, _wCntAY, _avgAY, _numElementsAveraged);
-  updateEMA(newAZ, _wSumAZ, _wCntAZ, _avgAZ, _numElementsAveraged);
-  _numElementsAveraged++;  
+void OrientationHandler::updateAverageAccel(int16_t newAX, int16_t newAY, int16_t newAZ) { 
+  
+  //Replace old values in the arrays with the new values.
+  int replaceIndex = _numTimesAveraged % AVG_ARRAY_SIZE;
+  _avgAXArray[replaceIndex] = newAX;
+  _avgAYArray[replaceIndex] = newAY; 
+  _avgAZArray[replaceIndex] = newAZ; 
+
+  int32_t aXSum = 0;
+  int32_t aYSum = 0;
+  int32_t aZSum = 0;
+
+  //Get the average of the arays.
+  for (int i = 0; i < AVG_ARRAY_SIZE; i++) {
+    aXSum += _avgAXArray[i];
+    aYSum += _avgAYArray[i];
+    aZSum += _avgAZArray[i];
+  }
+  
+  _avgAX = aXSum / AVG_ARRAY_SIZE;
+  _avgAY = aYSum / AVG_ARRAY_SIZE;
+  _avgAZ = aZSum / AVG_ARRAY_SIZE;
+  
+  _numTimesAveraged++;
 }
 
 /**

@@ -11,7 +11,7 @@
 class ESC {
 	
 	private:
-		int _cycleLength = 4000;
+		int _cycleLength;
     void pulseESCs(float throttle1, float throttle2, float throttle3, float throttle4, uint32_t &lastCycleTime);
 	
 	public:
