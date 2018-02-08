@@ -75,7 +75,7 @@ void ESC::calibrate() {
         pLESC4 = MIN_PULSE_TIME;
       }
     #endif
-    
+
     //Wait until the loop time is over. Consistency is very important.
     while(micros() <  beginLoopTime + loopTime);
     //Begin the pulse

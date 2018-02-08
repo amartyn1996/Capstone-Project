@@ -11,12 +11,19 @@ RCReceiver::RCReceiver() {
   _timeOnPin8 = 0; _timeOnPin9 = 0; _timeOnPin10 = 0; _timeOnPin11 = 0;
 }
 
+/**
+ * Enables pin change interupts on pins 8-11.
+ */
 void RCReceiver::initialize() {
   DDRB &= 0b11110000; //Set pins 8-11 to input.
   PCICR |= (1<<PCIE0); //Enable pin change interupts on PortB.
   PCMSK0 |= (0xF<<PCINT8); //Enable pin change interupts on pins 8-11.
 }
 
+/**
+ * Returns information sent from the remote controller.
+ * Range: 0.0 - 1.0
+ */
 void RCReceiver::getRCCommands(float &pitch, float &roll, float &yaw, float &throttle) {
   pitch    = (float) min(RC_MAX_PULSE_LEN, max(RC_MIN_PULSE_LEN, _timeOnPin10)) / RC_MIN_PULSE_LEN - 1.0;
   roll     = (float) min(RC_MAX_PULSE_LEN, max(RC_MIN_PULSE_LEN, _timeOnPin8))  / RC_MIN_PULSE_LEN - 1.0;
