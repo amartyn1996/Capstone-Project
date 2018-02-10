@@ -59,8 +59,16 @@ void loop() {
   static float RCRoll = 0;
   static float RCYaw = 0;
   static float RCThrottle = 0;
+  static float demandPitch = 0;
+  static float demandRoll = 0;
+  static float demandYaw = 0;
   
   orHand->calcOrientation(pitch, roll, yaw);
+
+  //Convert orientation from degrees to (half radians?). -1.0 straight down, 1.0 straight up.
+  pitch /= 90;
+  roll /= 90;
+  yaw /= 90;
   
   rc->getRCCommands(RCPitch, RCRoll, RCYaw, RCThrottle);
 
@@ -68,11 +76,13 @@ void loop() {
   RCPitch = 2*RCPitch-1;
   RCRoll = 2*RCRoll-1;
   RCYaw = 2*RCYaw-1;
-  
+
   //NOTE:
   //Pitch is not working on the remote controller I am using.
   //Therefore, I will be using Yaw on the RC for Roll and Roll on the RC for Pitch.
-  esc->demandControl( (-pitch/90 * .7) + (RCRoll * .3), (-roll/90 * .7) + (RCYaw * -.3), (-yaw/90 * .5), RCThrottle, lastCycleTime);
+  PIDControl(pitch, roll, yaw, RCRoll, RCYaw, 0, demandPitch, demandRoll, demandYaw);
+  
+  esc->demandControl( demandPitch, demandRoll, demandYaw, RCThrottle, lastCycleTime);
 }
 
 /**
