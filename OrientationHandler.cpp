@@ -20,7 +20,7 @@ bool OrientationHandler::initialize() {
 }
 
 /**
- *  Calibrates the IMU and gets the initial pitch and roll.
+ *  Calibrates the IMU and gets the initial pitch, roll, yaw.
  */
 bool OrientationHandler::calibrate() {
   bool ret = _imu->calibrate();
@@ -37,7 +37,7 @@ bool OrientationHandler::calibrate() {
 }
 
 /**
- *  Calculates the current pitch and roll from IMU data.
+ *  Calculates the current pitch, roll, and yaw from IMU data.
  */
 void OrientationHandler::calcOrientation(float &pitch, float &roll, float &yaw) {
   
@@ -66,24 +66,20 @@ void OrientationHandler::calcOrientation(float &pitch, float &roll, float &yaw) 
   float deltaY = _prevGY * deltaTime;
   float deltaZ = _prevGZ * deltaTime;
 
-
-  float tmp = _roll;
-  float tmp2 = _pitch;
+  float tmpPitch = _pitch;
+  float tmpRoll = _roll;  
 
   //Apply the change in angle to the previous angle. 
-  _pitch = _pitch + deltaX * abs(cos((PI/180) * tmp));
-  _roll = _roll - deltaY * abs(cos((PI/180) * tmp2));
-  //_yaw = _yaw + deltaZ;
+  _pitch = _pitch + deltaX * abs(cos((PI/180) * tmpRoll));
+  _roll = _roll - deltaY * abs(cos((PI/180) * tmpPitch));
+  _yaw = _yaw + deltaZ * abs(cos((PI/180) * tmpRoll));
   
-  //Account for yaw motion.
-  
+  //Account for yaw motion.  
+  _pitch -= tmpRoll * sin((PI/180) * deltaZ);
+  _roll += tmpPitch * sin((PI/180) * deltaZ);
 
-  //Serial.println(abs(sin((PI/180) * tmp)));
-  
-  _pitch -= tmp * sin((PI/180) * deltaZ);
-  _roll += tmp2 * sin((PI/180) * deltaZ);
-  //_yaw -= tmp2 * sin((PI/180) * deltaY);
-  
+  //Add yaw if rolled over and pitching
+  _yaw += deltaX * sin((PI/180) * _roll);
 
   //Use accelerometer data to compensate for gyro drift.
   _pitch = _pitch * (1 - ACCEL_FACTOR) + 90 * aY * ACCEL_FACTOR;
@@ -91,7 +87,7 @@ void OrientationHandler::calcOrientation(float &pitch, float &roll, float &yaw) 
   
   pitch = _pitch;
   roll = _roll;
-  //yaw = _yaw;
+  yaw = _yaw;
   
   _prevGX = gX;
   _prevGY = gY;
