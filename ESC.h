@@ -17,7 +17,7 @@ class ESC {
 	public:
 		ESC(int cycleLength);
 		void calibrate();		
-    void demandControl(float pitch, float roll, float throttle, uint32_t &lastCycleTime);
+    void demandControl(float pitch, float roll, float yaw, float throttle, uint32_t &lastCycleTime);
 };
 
 #endif

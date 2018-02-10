@@ -23,8 +23,6 @@ class OrientationHandler {
 	int16_t _avgAX, _avgAY, _avgAZ;
 
 	void updateAverageAccel(int16_t newAX, int16_t newAY, int16_t newAZ);
-	void normalize(float &aX, float &aY, float &aZ);
-	float vecLength(float aX, float aY, float aZ);
 
   public:
 	OrientationHandler(IMU* imu);

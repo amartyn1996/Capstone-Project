@@ -1,5 +1,6 @@
 #include <Arduino.h>
 #include "OrientationHandler.h"
+#include "MiscMath.h"
 
 OrientationHandler::OrientationHandler(IMU* imu) {
   _imu = imu;
@@ -28,7 +29,7 @@ bool OrientationHandler::calibrate() {
   //Get the initial pitch and roll
   float aX, aY, aZ, gX, gY, gZ;
   _imu->getSensorData(aX, aY, aZ, gX, gY, gZ);
-  normalize(aX, aY, aZ);
+  MiscMath::normalize(aX, aY, aZ);
   _pitch = 90 * aY;
   _roll = 90 * aX;
   _yaw = 0;
@@ -57,8 +58,8 @@ void OrientationHandler::calcOrientation(float &pitch, float &roll, float &yaw) 
   aY = ((float) _avgAY) / ACCEL_AVG_SCALING;
   aZ = ((float) _avgAZ) / ACCEL_AVG_SCALING;
 
-  normalize(aX, aY, aZ);
-  
+  MiscMath::normalize(aX, aY, aZ);
+
   //Calculate the change in gyro angle between last update and now.
   uint32_t curTime = millis();
   float deltaTime = .001 * (float) (curTime - _prevTime);
@@ -124,23 +125,6 @@ void OrientationHandler::updateAverageAccel(int16_t newAX, int16_t newAY, int16_
   _avgAZ = aZSum / AVG_ARRAY_SIZE;
   
   _numTimesAveraged++;
-}
-
-/**
- *  Takes in a vector and normalizes it.
- */
-void OrientationHandler::normalize(float &aX, float &aY, float &aZ) {
-  float len = vecLength(aX, aY, aZ);
-  aX /= len;
-  aY /= len;
-  aZ /= len;
-}
-
-/**
- *  Returns the length of the input vector.
- */
-float OrientationHandler::vecLength(float aX, float aY, float aZ) {
-  return sqrt(aX*aX + aY*aY + aZ*aZ);
 }
 
 

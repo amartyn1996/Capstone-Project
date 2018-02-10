@@ -5,10 +5,10 @@
 #include "RCReceiver.h"
 
 #define SAFEMODE 0
-#define VISUALIZE 1
+#define VISUALIZE 0
 #define VIS_IMU 0
 #define VIS_RC 0
-#define VIS_ORIENTATION 1
+#define VIS_ORIENTATION 0
 
 
 IMU* imu;
@@ -35,13 +35,13 @@ void setup() {
   Serial.begin(9600);
 
   Serial.println("Begin ESC Calibrate");
-  //esc->calibrate();
+  esc->calibrate();
   Serial.println("End ESC Calibrate");
     
   orHand->initialize();
   orHand->calibrate();
 
-  //rc->initialize();
+  rc->initialize();
   
   #if VISUALIZE
     visualize();
@@ -72,7 +72,7 @@ void loop() {
   //NOTE:
   //Pitch is not working on the remote controller I am using.
   //Therefore, I will be using Yaw on the RC for Roll and Roll on the RC for Pitch.
-  esc->demandControl( (-pitch/90 * .7) + (RCRoll * .3), (-roll/90 * .7) + (RCYaw * -.3), RCThrottle, lastCycleTime);
+  esc->demandControl( (-pitch/90 * .7) + (RCRoll * .3), (-roll/90 * .7) + (RCYaw * -.3), (-yaw/90 * .5), RCThrottle, lastCycleTime);
 }
 
 /**
