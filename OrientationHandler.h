@@ -16,7 +16,7 @@ class OrientationHandler {
 	IMU* _imu;
 	uint32_t _prevTime;
 	float _prevGX, _prevGY, _prevGZ;
-	float _pitch, _roll;
+	float _pitch, _roll, _yaw;
   uint32_t _numTimesAveraged;
   int16_t *_avgAXArray, *_avgAYArray, *_avgAZArray;
 	//Average acceleration vector.
@@ -30,7 +30,7 @@ class OrientationHandler {
 	OrientationHandler(IMU* imu);
 	bool initialize();
 	bool calibrate();
-	void calcOrientation(float &pitch, float &roll);
+	void calcOrientation(float &pitch, float &roll, float &yaw);
 };
 
 #endif

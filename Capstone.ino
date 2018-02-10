@@ -5,10 +5,10 @@
 #include "RCReceiver.h"
 
 #define SAFEMODE 0
-#define VISUALIZE 0
+#define VISUALIZE 1
 #define VIS_IMU 0
 #define VIS_RC 0
-#define VIS_ORIENTATION 0
+#define VIS_ORIENTATION 1
 
 
 IMU* imu;
@@ -35,13 +35,13 @@ void setup() {
   Serial.begin(9600);
 
   Serial.println("Begin ESC Calibrate");
-  esc->calibrate();
+  //esc->calibrate();
   Serial.println("End ESC Calibrate");
     
   orHand->initialize();
   orHand->calibrate();
 
-  rc->initialize();
+  //rc->initialize();
   
   #if VISUALIZE
     visualize();
@@ -54,12 +54,13 @@ void loop() {
   static uint32_t lastCycleTime = micros();
   static float pitch = 0;
   static float roll = 0;
+  static float yaw = 0;
   static float RCPitch = 0;
   static float RCRoll = 0;
   static float RCYaw = 0;
   static float RCThrottle = 0;
   
-  orHand->calcOrientation(pitch, roll);
+  orHand->calcOrientation(pitch, roll, yaw);
   
   rc->getRCCommands(RCPitch, RCRoll, RCYaw, RCThrottle);
 
@@ -91,10 +92,10 @@ void visualize() {
     #endif
 
     #if VIS_ORIENTATION       
-      float pitch, roll;
-      orHand->calcOrientation(pitch, roll);
+      float pitch, roll, yaw;
+      orHand->calcOrientation(pitch, roll, yaw);
       if (numCycles % 30 == 0) {
-        Serial.print("Pitch: ");Serial.print(pitch);Serial.print("  Roll: ");Serial.println(roll);
+        Serial.print("Pitch: ");Serial.print(pitch);Serial.print("  Roll: ");Serial.print(roll);Serial.print("  Yaw: ");Serial.println(yaw);
       }        
     #endif
 
