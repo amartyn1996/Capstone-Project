@@ -4,6 +4,7 @@
 #include "ESC.h"
 #include "RCReceiver.h"
 #include "PIDController.h"
+#include "MiscMath.h"
 
 #define SAFEMODE 0
 #define VISUALIZE 0
@@ -11,6 +12,7 @@
 #define VIS_RC 0
 #define VIS_ORIENTATION 0
 #define VIS_PID 0
+#define VIS_VIBRATION 0
 
 
 IMU* imu;
@@ -84,7 +86,7 @@ void loop() {
   //NOTE:
   //Pitch is not working on the remote controller I am using.
   //Therefore, I will be using Yaw on the RC for Roll and Roll on the RC for Pitch.
-  pid->PIDControl(pitch, roll, yaw, RCRoll, RCYaw, 0, demandPitch, demandRoll, demandYaw);
+  pid->PIDControl(pitch, roll, 0, RCRoll, RCYaw, 0, demandPitch, demandRoll, demandYaw);
   
   esc->demandControl( demandPitch, demandRoll, demandYaw, RCThrottle, lastCycleTime);
 }
@@ -130,13 +132,38 @@ void visualize() {
       float dp, dr, dy;
       orHand->calcOrientation(p, r, y);
       rc->getRCCommands(rcp,rcr,rcy,t);
-      pid->PIDControl(p/90, r/90, y/90, 0, 0, 0, dp, dr, dy);
+      pid->PIDControl(p/90, r/90, 0, 0, 0, 0, dp, dr, dy);
       if (numCycles % 30 == 0) {
         //Serial.print("Pitch: ");Serial.print(p/90);Serial.print("  Roll: ");Serial.print(r/90);Serial.print("  Yaw: ");Serial.println(y/90);
         Serial.print(" DemandPitch: "); Serial.print(dp);
         Serial.print(" DemandRoll: "); Serial.print(dr);
         Serial.print(" DemandYaw: "); Serial.println(dy);
       }      
+    #endif
+
+    #if VIS_VIBRATION
+      while(1) {
+        static uint32_t lastCycleTime = micros();
+        float rcp, rcr, rcy, t;
+        float accelX, accelY, accelZ, gyroX, gyroY, gyroZ;
+        static float magGyro = 0;
+        
+        imu->getSensorData(accelX, accelY, accelZ, gyroX, gyroY, gyroZ);
+        
+        magGyro += MiscMath::vecLength(gyroX, gyroY, gyroZ);
+        
+        rc->getRCCommands(rcp,rcr,rcy,t);
+        t = min(.25, t);
+
+        esc->pulseESCs( 0, 0, 0, t, lastCycleTime);
+
+        if (numCycles % 200 == 0) {
+          Serial.println(magGyro/200);
+          magGyro = 0;
+        }
+        
+        numCycles++;
+      }
     #endif
     
     delay(3);

@@ -4,11 +4,13 @@
 static volatile uint8_t _pinsState;
 static volatile uint32_t _startTimeOnPin8, _startTimeOnPin9, _startTimeOnPin10, _startTimeOnPin11;
 static volatile uint32_t _timeOnPin8, _timeOnPin9, _timeOnPin10, _timeOnPin11;
+static volatile uint32_t _timeLastUpdate; 
 
 RCReceiver::RCReceiver() {
   _pinsState = 0;
   _startTimeOnPin8 = 0; _startTimeOnPin9 = 0; _startTimeOnPin10 = 0; _startTimeOnPin11 = 0;
   _timeOnPin8 = 0; _timeOnPin9 = 0; _timeOnPin10 = 0; _timeOnPin11 = 0;
+  _timeLastUpdate = 0;
 }
 
 /**
@@ -25,10 +27,17 @@ void RCReceiver::initialize() {
  * Range: 0.0 - 1.0
  */
 void RCReceiver::getRCCommands(float &pitch, float &roll, float &yaw, float &throttle) {
-  pitch    = (float) min(RC_MAX_PULSE_LEN, max(RC_MIN_PULSE_LEN, _timeOnPin10)) / RC_MIN_PULSE_LEN - 1.0;
-  roll     = (float) min(RC_MAX_PULSE_LEN, max(RC_MIN_PULSE_LEN, _timeOnPin8))  / RC_MIN_PULSE_LEN - 1.0;
-  yaw      = (float) min(RC_MAX_PULSE_LEN, max(RC_MIN_PULSE_LEN, _timeOnPin11)) / RC_MIN_PULSE_LEN - 1.0;
-  throttle = (float) min(RC_MAX_PULSE_LEN, max(RC_MIN_PULSE_LEN, _timeOnPin9))  / RC_MIN_PULSE_LEN - 1.0;
+  if (micros() - _timeLastUpdate < RC_MAX_TIME_WITHOUT_UPDATE) {
+    pitch    = (float) min(RC_MAX_PULSE_LEN, max(RC_MIN_PULSE_LEN, _timeOnPin10)) / RC_MIN_PULSE_LEN - 1.0;
+    roll     = (float) min(RC_MAX_PULSE_LEN, max(RC_MIN_PULSE_LEN, _timeOnPin8))  / RC_MIN_PULSE_LEN - 1.0;
+    yaw      = (float) min(RC_MAX_PULSE_LEN, max(RC_MIN_PULSE_LEN, _timeOnPin11)) / RC_MIN_PULSE_LEN - 1.0;
+    throttle = (float) min(RC_MAX_PULSE_LEN, max(RC_MIN_PULSE_LEN, _timeOnPin9))  / RC_MIN_PULSE_LEN - 1.0;
+  } else {
+    pitch    = 0.0;
+    roll     = 0.0;
+    yaw      = 0.0;
+    throttle = 0.0;
+  }
 }
 
 /*
@@ -61,4 +70,5 @@ ISR(PCINT0_vect) {
   _timeOnPin11  = ((changedPins & 0x8) && !(curPinState & 0x8)) ? (currentTime - _startTimeOnPin11) : _timeOnPin11;
 
   _pinsState = curPinState;
+  _timeLastUpdate = currentTime;
 }
