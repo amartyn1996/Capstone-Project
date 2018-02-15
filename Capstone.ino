@@ -86,7 +86,7 @@ void loop() {
   //NOTE:
   //Pitch is not working on the remote controller I am using.
   //Therefore, I will be using Yaw on the RC for Roll and Roll on the RC for Pitch.
-  pid->PIDControl(pitch, roll, 0, RCRoll, RCYaw, 0, demandPitch, demandRoll, demandYaw);
+  pid->PIDControl(pitch, 0, 0, 0, 0, 0, demandPitch, demandRoll, demandYaw);
   
   esc->demandControl( demandPitch, demandRoll, demandYaw, RCThrottle, lastCycleTime);
 }
