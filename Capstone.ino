@@ -132,7 +132,7 @@ void visualize() {
       float dp, dr, dy;
       orHand->calcOrientation(p, r, y);
       rc->getRCCommands(rcp,rcr,rcy,t);
-      pid->PIDControl(p/90, r/90, 0, 0, 0, 0, dp, dr, dy);
+      pid->PIDControl(p/90, 0, 0, 0, 0, 0, dp, dr, dy);
       if (numCycles % 30 == 0) {
         //Serial.print("Pitch: ");Serial.print(p/90);Serial.print("  Roll: ");Serial.print(r/90);Serial.print("  Yaw: ");Serial.println(y/90);
         Serial.print(" DemandPitch: "); Serial.print(dp);
