@@ -85,7 +85,7 @@ void loop() {
   //NOTE:
   //Pitch is not working on the remote controller I am using.
   //Therefore, I will be using Yaw on the RC for Roll and Roll on the RC for Pitch.
-  pid->PIDControl(pitch, 0, 0, 0, 0, 0, demandPitch, demandRoll, demandYaw);
+  pid->PIDControl(pitch, roll, 0, 0, 0, 0, demandPitch, demandRoll, demandYaw);
   
   esc->demandControl( demandPitch, demandRoll, demandYaw, RCThrottle, lastCycleTime);
 }
@@ -131,7 +131,7 @@ void visualize() {
       float dp, dr, dy;
       orHand->calcOrientation(p, r, y);
       rc->getRCCommands(rcp,rcr,rcy,t);
-      pid->PIDControl(p/90, 0, 0, 0, 0, 0, dp, dr, dy);
+      pid->PIDControl(p/90, r/90, 0, 0, 0, 0, dp, dr, dy);
       if (numCycles % 30 == 0) {
         //Serial.print("Pitch: ");Serial.print(p/90);Serial.print("  Roll: ");Serial.print(r/90);Serial.print("  Yaw: ");Serial.println(y/90);
         Serial.print(" DemandPitch: "); Serial.print(dp);

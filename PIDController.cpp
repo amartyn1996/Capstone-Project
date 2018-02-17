@@ -58,9 +58,9 @@ void PIDController::PIDControl(float curPitch, float curRoll, float curYaw, floa
   //Serial.print(errorPitch * PID_P_GAIN);Serial.print("   ,   ");Serial.print(deltaErrorPitch * PID_D_GAIN);Serial.print("   ,   ");Serial.println((errorPitch * PID_P_GAIN) + (_sumErrorPitch * PID_I_GAIN) + (deltaErrorPitch * PID_D_GAIN));
 
   //Return the demanded control.
-  demandPitch = (errorPitch * PID_P_GAIN) + (_sumErrorPitch * PID_I_GAIN) + (deltaErrorPitch * PID_D_GAIN);
-  demandRoll  = (errorRoll  * PID_P_GAIN) + (_sumErrorRoll  * PID_I_GAIN) + (deltaErrorRoll  * PID_D_GAIN);
-  demandYaw   = (errorYaw   * PID_P_GAIN) + (_sumErrorYaw   * PID_I_GAIN) + (deltaErrorYaw   * PID_D_GAIN);
+  demandPitch = (errorPitch * PID_P_GAIN_P) + (_sumErrorPitch * PID_I_GAIN_P) + (deltaErrorPitch * PID_D_GAIN_P);
+  demandRoll  = (errorRoll  * PID_P_GAIN_R) + (_sumErrorRoll  * PID_I_GAIN_R) + (deltaErrorRoll  * PID_D_GAIN_R);
+  demandYaw   = (errorYaw   * PID_P_GAIN_Y) + (_sumErrorYaw   * PID_I_GAIN_Y) + (deltaErrorYaw   * PID_D_GAIN_Y);
   
   //Update the previous error.
   _prevErrorPitch = errorPitch;
