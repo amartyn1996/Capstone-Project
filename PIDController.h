@@ -1,9 +1,9 @@
 #ifndef PIDController_H
 #define PIDController_H
 
-#define PID_P_GAIN 5.0
+#define PID_P_GAIN 3.0
 #define PID_I_GAIN 0.00
-#define PID_D_GAIN 500.0
+#define PID_D_GAIN 300.0
 #define NUM_ELEMENTS_TO_AVERAGE 5
 
 class PIDController {

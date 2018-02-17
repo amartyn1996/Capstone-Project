@@ -14,7 +14,6 @@
 #define VIS_PID 0
 #define VIS_VIBRATION 0
 
-
 IMU* imu;
 ESC* esc;
 OrientationHandler* orHand;

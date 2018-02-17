@@ -148,6 +148,11 @@ void ESC::demandControl(float pitch, float roll, float yaw, float throttle, uint
   t2 +=  pitch + roll - yaw; //Front right motor.
   t3 += -pitch + roll + yaw; //Back right motor.
   t4 += -pitch - roll - yaw; //Back left motor.
+
+  t1 = max(throttle/2, t1);
+  t2 = max(throttle/2, t2);
+  t3 = max(throttle/2, t3);
+  t4 = max(throttle/2, t4);
   
   pulseESCs(t1,t2,t3,t4,lastCycleTime);
 }
