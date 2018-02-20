@@ -1,7 +1,9 @@
 #include <Arduino.h>
 #include "ESC.h"
 
-ESC::ESC(int cycleLength) {_cycleLength = cycleLength;}
+ESC::ESC(int cycleLength, IMU* imu) {
+  _cycleLength = cycleLength; _imu = imu;
+}
 
 /**
  *  Tells the ESCs what the maximum and minimum pulse length are. (Max throttle and minimum throttle)
@@ -119,6 +121,9 @@ void ESC::pulseESCs(float throttle1, float throttle2, float throttle3, float thr
   PORTD |= 0b11110000;
   //Start a new cycle.
   lastCycleTime = micros();
+
+  //Do something useful while it waits
+  _imu->updateSensorData();
 
   while(PORTD & 0b11110000) {
     //Turn off the pulses when they are done.

@@ -30,9 +30,9 @@ void setup() {
 
   DDRD |= 0b11110000;
   PORTD |= 0b11110000;
-
-  esc = new ESC(4000);
+ 
   imu = new MPU6050();
+  esc = new ESC(4000,imu);
   orHand = new OrientationHandler(imu);
   rc = new RCReceiver();
   pid = new PIDController();
@@ -67,7 +67,7 @@ void loop() {
   static float demandPitch = 0;
   static float demandRoll = 0;
   static float demandYaw = 0;
-  
+
   orHand->calcOrientation(pitch, roll, yaw);
 
   //Convert orientation from degrees to (half radians?). -1.0 straight down, 1.0 straight up.
@@ -100,6 +100,7 @@ void visualize() {
     
     #if VIS_IMU
       float aX, aY, aZ, gX, gY, gZ;
+      imu->updateSensorData();
       imu->getSensorData(aX, aY, aZ, gX, gY, gZ);
       Serial.print("Gyro : "); Serial.print(gX); Serial.print(" -- "); Serial.print(gY);  Serial.print(" -- "); Serial.println(gZ);
       Serial.print("Accel: "); Serial.print(aX); Serial.print(" -- "); Serial.print(aY);  Serial.print(" -- "); Serial.println(aZ); 
@@ -108,6 +109,7 @@ void visualize() {
 
     #if VIS_ORIENTATION       
       float pitch, roll, yaw;
+      imu->updateSensorData();
       orHand->calcOrientation(pitch, roll, yaw);
       if (numCycles % 30 == 0) {
         Serial.print("Pitch: ");Serial.print(pitch);Serial.print("  Roll: ");Serial.print(roll);Serial.print("  Yaw: ");Serial.println(yaw);
@@ -146,7 +148,8 @@ void visualize() {
         float rcp, rcr, rcy, t;
         float accelX, accelY, accelZ, gyroX, gyroY, gyroZ;
         static float magGyro = 0;
-        
+
+        imu->updateSensorData();
         imu->getSensorData(accelX, accelY, accelZ, gyroX, gyroY, gyroZ);
         
         magGyro += MiscMath::vecLength(gyroX, gyroY, gyroZ);

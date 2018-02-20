@@ -6,7 +6,7 @@
 
 //How important acceleration is in the pitch/roll calculation.
 //You want just enough to account for gyro drift. Range: 0.0 - 1.0
-#define ACCEL_FACTOR .005 
+#define ACCEL_FACTOR .005
 #define ACCEL_AVG_SCALING 32
 #define AVG_ARRAY_SIZE 10
 

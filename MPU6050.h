@@ -27,9 +27,12 @@ class MPU6050 : virtual public IMU {
 	void getInitAccel(float &aX, float &aY, float &aZ);
 	bool getRawSensorData(int16_t &accelX, int16_t &accelY, int16_t &accelZ, int16_t &gyroX, int16_t &gyroY, int16_t &gyroZ);
 	bool getSensorData(float &accelX, float &accelY, float &accelZ, float &gyroX, float &gyroY, float &gyroZ);
+  void updateSensorData();
   
   private:
     float _gravAccelX, _gravAccelY, _gravAccelZ, _offsetGyroX, _offsetGyroY, _offsetGyroZ;
+    float _accelX, _accelY, _accelZ, _gyroX, _gyroY, _gyroZ;
+    bool _aOK;
 	
 };
 

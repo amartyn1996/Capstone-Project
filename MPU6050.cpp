@@ -2,7 +2,14 @@
 #include <Wire.h>
 #include "MPU6050.h"
 
-MPU6050::MPU6050() {}
+MPU6050::MPU6050() {
+  _gravAccelX = 0; _gravAccelY = 0; _gravAccelZ = 0;
+  _offsetGyroX = 0; _offsetGyroY = 0; _offsetGyroZ = 0;
+  _accelX = 0; _accelY = 0; _accelZ = 0;
+  _gyroX = 0; _gyroY = 0; _gyroZ = 0;
+  _aOK = true;
+
+}
 
 /**
  *  Activates the MPU6050 and sets the config registers for the gyro and accelerometer.
@@ -10,10 +17,7 @@ MPU6050::MPU6050() {}
  *  Returns true if successful.
  */
 bool MPU6050::initialize() {
-  
-  _gravAccelX = 0; _gravAccelY = 0; _gravAccelZ = 0;
-  _offsetGyroX = 0; _offsetGyroY = 0; _offsetGyroZ = 0;
-  
+
   Wire.beginTransmission(IMU_ADDRESS);
   Wire.write(REG_PWR_MGMT_1);
   Wire.write(0);
@@ -89,17 +93,27 @@ bool MPU6050::getRawSensorData(int16_t &accelX, int16_t &accelY, int16_t &accelZ
  *  Returns true if successful.
  */
 bool MPU6050::getSensorData(float &accelX, float &accelY, float &accelZ, float &gyroX, float &gyroY, float &gyroZ) {
+  
+  accelX = _accelX;
+  accelY = _accelY;  
+  accelZ = _accelZ;  
+  gyroX = _gyroX;
+  gyroY = _gyroY;
+  gyroZ = _gyroZ;
+  
+  return _aOK;
+}
+
+void MPU6050::updateSensorData() {
   int16_t tmpAX, tmpAY, tmpAZ, tmpGX, tmpGY, tmpGZ;
-  bool aOK = getRawSensorData(tmpAX, tmpAY, tmpAZ, tmpGX, tmpGY, tmpGZ);
+  _aOK = getRawSensorData(tmpAX, tmpAY, tmpAZ, tmpGX, tmpGY, tmpGZ);
   
-  accelX = (float) tmpAX / ACCEL_LSB_SENSITIVITY;
-  accelY = (float) tmpAY / ACCEL_LSB_SENSITIVITY;  
-  accelZ = (float) tmpAZ / ACCEL_LSB_SENSITIVITY;  
-  gyroX = ((float) tmpGX - _offsetGyroX) / GYRO_LSB_SENSITIVITY;
-  gyroY = ((float) tmpGY - _offsetGyroY) / GYRO_LSB_SENSITIVITY;
-  gyroZ = ((float) tmpGZ - _offsetGyroZ) / GYRO_LSB_SENSITIVITY;
-  
-  return aOK;
+  _accelX = (float) tmpAX / ACCEL_LSB_SENSITIVITY;
+  _accelY = (float) tmpAY / ACCEL_LSB_SENSITIVITY;  
+  _accelZ = (float) tmpAZ / ACCEL_LSB_SENSITIVITY;  
+  _gyroX = ((float) tmpGX - _offsetGyroX) / GYRO_LSB_SENSITIVITY;
+  _gyroY = ((float) tmpGY - _offsetGyroY) / GYRO_LSB_SENSITIVITY;
+  _gyroZ = ((float) tmpGZ - _offsetGyroZ) / GYRO_LSB_SENSITIVITY;
 }
 
 /**

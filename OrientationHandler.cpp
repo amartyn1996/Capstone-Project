@@ -28,6 +28,7 @@ bool OrientationHandler::calibrate() {
 
   //Get the initial pitch and roll
   float aX, aY, aZ, gX, gY, gZ;
+  _imu->updateSensorData();
   _imu->getSensorData(aX, aY, aZ, gX, gY, gZ);
   MiscMath::normalize(aX, aY, aZ);
   _pitch = 90 * aY;
@@ -59,7 +60,7 @@ void OrientationHandler::calcOrientation(float &pitch, float &roll, float &yaw) 
   aZ = ((float) _avgAZ) / ACCEL_AVG_SCALING;
 
   MiscMath::normalize(aX, aY, aZ);
-
+  
   //Calculate the change in gyro angle between last update and now.
   uint32_t curTime = millis();
   float deltaTime = .001 * (float) (curTime - _prevTime);
@@ -71,20 +72,27 @@ void OrientationHandler::calcOrientation(float &pitch, float &roll, float &yaw) 
   float tmpRoll = _roll;  
 
   //Apply the change in angle to the previous angle. 
-  _pitch = _pitch + deltaX * abs(cos((PI/180) * tmpRoll));
-  _roll = _roll - deltaY * abs(cos((PI/180) * tmpPitch));
-  _yaw = _yaw + deltaZ * abs(cos((PI/180) * tmpRoll));
+  float cosTmpPitch = abs(cos(DEGREES_TO_RADIANS * tmpPitch));
+  float cosTmpRoll = abs(cos(DEGREES_TO_RADIANS * tmpRoll));
+  
+  _pitch += deltaX * cosTmpRoll;
+  _roll -= deltaY * cosTmpPitch;
+  _yaw += deltaZ * cosTmpRoll; 
   
   //Account for yaw motion.  
-  _pitch -= tmpRoll * sin((PI/180) * deltaZ);
-  _roll += tmpPitch * sin((PI/180) * deltaZ);
+  float sinDeltaZ = sin(DEGREES_TO_RADIANS * deltaZ);
+  
+  _pitch -= tmpRoll * sinDeltaZ;
+  _roll += tmpPitch * sinDeltaZ;
 
   //Add yaw if rolled over and pitching
-  _yaw += deltaX * sin((PI/180) * _roll);
+  _yaw += deltaX * sin(DEGREES_TO_RADIANS * _roll);
 
   //Use accelerometer data to compensate for gyro drift.
-  _pitch = _pitch * (1 - ACCEL_FACTOR) + 90 * aY * ACCEL_FACTOR;
-  _roll = _roll * (1 - ACCEL_FACTOR) + 90 * aX * ACCEL_FACTOR; 
+  static const float ninetyTimesAccelFactor = 90.0 * ACCEL_FACTOR;
+  static const float oneMinusAccelFactor = 1.0 - ACCEL_FACTOR;
+  _pitch = _pitch * oneMinusAccelFactor + aY * ninetyTimesAccelFactor;
+  _roll = _roll * oneMinusAccelFactor + aX * ninetyTimesAccelFactor; 
   
   pitch = _pitch;
   roll = _roll;
@@ -94,7 +102,6 @@ void OrientationHandler::calcOrientation(float &pitch, float &roll, float &yaw) 
   _prevGY = gY;
   _prevGZ = gZ;
   _prevTime = curTime;
-
 }
 
 
@@ -104,7 +111,7 @@ void OrientationHandler::calcOrientation(float &pitch, float &roll, float &yaw) 
 void OrientationHandler::updateAverageAccel(int16_t newAX, int16_t newAY, int16_t newAZ) { 
   
   //Replace old values in the arrays with the new values.
-  int replaceIndex = _numTimesAveraged % AVG_ARRAY_SIZE;
+  uint8_t replaceIndex = _numTimesAveraged % AVG_ARRAY_SIZE;
   _avgAXArray[replaceIndex] = newAX;
   _avgAYArray[replaceIndex] = newAY; 
   _avgAZArray[replaceIndex] = newAZ; 
@@ -113,8 +120,7 @@ void OrientationHandler::updateAverageAccel(int16_t newAX, int16_t newAY, int16_
   int32_t aYSum = 0;
   int32_t aZSum = 0;
 
-  //Get the average of the arays.
-  for (int i = 0; i < AVG_ARRAY_SIZE; i++) {
+  for (uint8_t i = 0; i < AVG_ARRAY_SIZE; i++) {
     aXSum += _avgAXArray[i];
     aYSum += _avgAYArray[i];
     aZSum += _avgAZArray[i];
