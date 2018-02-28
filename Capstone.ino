@@ -14,6 +14,8 @@
 #define VIS_PID 0
 #define VIS_VIBRATION 0
 
+#define CYCLE_LENGTH 4000
+
 IMU* imu;
 ESC* esc;
 OrientationHandler* orHand;
@@ -32,16 +34,12 @@ void setup() {
   PORTD |= 0b11110000;
  
   imu = new MPU6050();
-  esc = new ESC(4000,imu);
+  esc = new ESC(16000);
   orHand = new OrientationHandler(imu);
   rc = new RCReceiver();
   pid = new PIDController();
     
   Serial.begin(9600);
-
-  Serial.println("Begin ESC Calibrate");
-  esc->calibrate();
-  Serial.println("End ESC Calibrate");
     
   orHand->initialize();
   orHand->calibrate();
@@ -56,6 +54,7 @@ void setup() {
 }
 
 void loop() {
+  
   static uint32_t lastCycleTime = micros();
   static float pitch = 0;
   static float roll = 0;
@@ -68,26 +67,35 @@ void loop() {
   static float demandRoll = 0;
   static float demandYaw = 0;
 
-  orHand->calcOrientation(pitch, roll, yaw);
-
-  //Convert orientation from degrees to (half radians?). -1.0 straight down, 1.0 straight up.
-  pitch /= 90;
-  roll /= 90;
-  yaw /= 90;
+  for (int i = 0; i < 3; i++) {
+    
+    uint32_t beginTime = micros();
+    
+    imu->updateSensorData();
+    orHand->calcOrientation(pitch, roll, yaw);
   
-  rc->getRCCommands(RCPitch, RCRoll, RCYaw, RCThrottle);
-
-  //Make RC values fall between -1.0 and 1.0
-  RCPitch = 2*RCPitch-1;
-  RCRoll = 2*RCRoll-1;
-  RCYaw = 2*RCYaw-1;
-
-  //NOTE:
-  //Pitch is not working on the remote controller I am using.
-  //Therefore, I will be using Yaw on the RC for Roll and Roll on the RC for Pitch.
-  pid->PIDControl(pitch, roll, 0, 0, 0, 0, demandPitch, demandRoll, demandYaw);
+    //Convert orientation from degrees to (half radians?). -1.0 straight down, 1.0 straight up.
+    pitch /= 90;
+    roll /= 90;
+    yaw /= 90;
   
-  esc->demandControl( demandPitch, demandRoll, demandYaw, RCThrottle, lastCycleTime);
+    rc->getRCCommands(RCPitch, RCRoll, RCYaw, RCThrottle);
+  
+    //Make RC values fall between -1.0 and 1.0
+    RCPitch = 2*RCPitch-1;
+    RCRoll = 2*RCRoll-1;
+    RCYaw = 2*RCYaw-1;
+  
+    //NOTE:
+    //Pitch is not working on the remote controller I am using.
+    //Therefore, I will be using Yaw on the RC for Roll and Roll on the RC for Pitch.
+    pid->PIDControl(pitch, roll, 0, 0, 0, 0, demandPitch, demandRoll, demandYaw);
+    
+    while (micros() - beginTime < CYCLE_LENGTH);
+    
+  }
+
+  esc->demandControl( 0, 0, 0, RCThrottle, lastCycleTime);
 }
 
 /**
@@ -131,6 +139,7 @@ void visualize() {
       float rcp, rcr, rcy, t;
       float p, r, y;
       float dp, dr, dy;
+      imu->updateSensorData();
       orHand->calcOrientation(p, r, y);
       rc->getRCCommands(rcp,rcr,rcy,t);
       pid->PIDControl(p/90, r/90, 0, 0, 0, 0, dp, dr, dy);

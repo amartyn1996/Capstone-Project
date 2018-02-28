@@ -38,6 +38,7 @@ void RCReceiver::getRCCommands(float &pitch, float &roll, float &yaw, float &thr
     yaw      = 0.0;
     throttle = 0.0;
   }
+  
 }
 
 /*
