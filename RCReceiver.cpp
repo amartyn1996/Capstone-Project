@@ -27,7 +27,10 @@ void RCReceiver::initialize() {
  * Range: 0.0 - 1.0
  */
 void RCReceiver::getRCCommands(float &pitch, float &roll, float &yaw, float &throttle) {
-  if (micros() - _timeLastUpdate < RC_MAX_TIME_WITHOUT_UPDATE) {
+
+  uint32_t maxTimeOnPin = max(_timeOnPin8, max(_timeOnPin9, max(_timeOnPin10, _timeOnPin11)));
+  
+  if (micros() - _timeLastUpdate < RC_MAX_TIME_WITHOUT_UPDATE && maxTimeOnPin < RC_MAX_ALLOWED_TIME_ON_PIN) {
     pitch    = (float) min(RC_MAX_PULSE_LEN, max(RC_MIN_PULSE_LEN, _timeOnPin10)) / RC_MIN_PULSE_LEN - 1.0;
     roll     = (float) min(RC_MAX_PULSE_LEN, max(RC_MIN_PULSE_LEN, _timeOnPin8))  / RC_MIN_PULSE_LEN - 1.0;
     yaw      = (float) min(RC_MAX_PULSE_LEN, max(RC_MIN_PULSE_LEN, _timeOnPin11)) / RC_MIN_PULSE_LEN - 1.0;

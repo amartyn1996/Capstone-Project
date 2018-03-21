@@ -67,6 +67,7 @@ void ESC::demandControl(float pitch, float roll, float yaw, float throttle, uint
   t2 = min(max(throttle/2, t2), .9);
   t3 = min(max(throttle/2, t3), .9);
   t4 = min(max(throttle/2, t4), .9);
+
   
   pulseESCs(t1,t2,t3,t4,lastCycleTime);
 }

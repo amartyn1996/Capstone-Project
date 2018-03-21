@@ -6,6 +6,7 @@
 #define RC_MAX_PULSE_LEN 2000            //
 #define RC_MIN_PULSE_LEN 1000            // Microseconds
 #define RC_MAX_TIME_WITHOUT_UPDATE 50000 //
+#define RC_MAX_ALLOWED_TIME_ON_PIN RC_MAX_PULSE_LEN+250
 
 class RCReceiver {
 
