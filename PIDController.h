@@ -1,15 +1,15 @@
 #ifndef PIDController_H
 #define PIDController_H
 
-#define PID_P_GAIN_P 0.07
-#define PID_I_GAIN_P 2.25
-#define PID_D_GAIN_P 200.0
-#define PID_P_GAIN_R 0.07
-#define PID_I_GAIN_R 2.25
-#define PID_D_GAIN_R 200.0
-#define PID_P_GAIN_Y 0.07
-#define PID_I_GAIN_Y 2.25
-#define PID_D_GAIN_Y 200.0
+#define PID_P_GAIN_P 0.02
+#define PID_I_GAIN_P 0.25
+#define PID_D_GAIN_P 100.0
+#define PID_P_GAIN_R 0.02
+#define PID_I_GAIN_R 0.25
+#define PID_D_GAIN_R 100.0
+#define PID_P_GAIN_Y 0.02
+#define PID_I_GAIN_Y 0.25
+#define PID_D_GAIN_Y 100.00
 #define NUM_ELEMENTS_TO_AVERAGE 9
 #define EXPECTED_DELTA_TIME 4000.0
 #define MAX_SUM_ERROR 0.02
