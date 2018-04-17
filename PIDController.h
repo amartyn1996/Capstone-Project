@@ -12,7 +12,7 @@
 #define PID_D_GAIN_Y 100.00
 #define NUM_ELEMENTS_TO_AVERAGE 9
 #define EXPECTED_DELTA_TIME 4000.0
-#define MAX_SUM_ERROR 0.02
+#define MAX_SUM_ERROR 0.04
 
 class PIDController {
 	
