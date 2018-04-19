@@ -15,6 +15,7 @@
 #define VIS_VIBRATION 0
 
 #define CYCLE_LENGTH 4000
+#define RC_CONTROL_FRACTION 0.05
 
 IMU* imu;
 ESC* esc;
@@ -76,20 +77,21 @@ void loop() {
   
     //Convert orientation from degrees to (half radians?). -1.0 straight down, 1.0 straight up.
     pitch /= 90;
-    roll /= 90;
-    yaw /= 90;
+    roll  /= 90;
+    yaw   /= 90;
   
     rc->getRCCommands(RCPitch, RCRoll, RCYaw, RCThrottle);
   
     //Make RC values fall between -1.0 and 1.0
-    RCPitch = 2*RCPitch-1;
-    RCRoll = 2*RCRoll-1;
-    RCYaw = 2*RCYaw-1;
+    //then multiply by some control fraction
+    RCPitch = (2*RCPitch-1) * RC_CONTROL_FRACTION;
+    RCRoll  = (2*RCRoll-1)  * RC_CONTROL_FRACTION;
+    RCYaw   = (2*RCYaw-1)   * RC_CONTROL_FRACTION;
     
     //NOTE:
     //Pitch is not working on the remote controller I am using.
     //Therefore, I will be using Yaw on the RC for Roll and Roll on the RC for Pitch.
-    pid->PIDControl(pitch, roll, yaw, RCRoll * .05, RCYaw * .05, 0, demandPitch, demandRoll, demandYaw);
+    pid->PIDControl(pitch, roll, yaw, RCRoll, RCYaw, 0, demandPitch, demandRoll, demandYaw);
     
     while (micros() - beginTime < CYCLE_LENGTH);
     
